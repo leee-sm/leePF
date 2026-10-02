@@ -1,5 +1,34 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Docker
+
+Create a local environment file before starting the container:
+
+```bash
+cp .env.local.example .env.local
+```
+
+Fill in the real API keys:
+
+```env
+KMA_SERVICE_KEY=your_kma_service_key
+KAKAO_REST_API_KEY=your_kakao_rest_api_key
+```
+
+Build and run with Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+To stop the app:
+
+```bash
+docker compose down
+```
+
 ## Getting Started
 
 First, run the development server:
