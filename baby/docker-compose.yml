@@ -1,0 +1,7 @@
+services:
+  baby:
+    build: .
+    container_name: baby-benefits-2026
+    ports:
+      - "8080:80"
+    restart: unless-stopped
