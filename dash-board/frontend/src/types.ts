@@ -1,0 +1,13 @@
+export type User = { id: number; sabun: string; displayName: string; roles: string[] };
+export type Runtime = { development_login_enabled: boolean; sso_enabled: boolean };
+export type Option = { value: string; label: string };
+export type Filter = { id: string; label: string; default: any; required: boolean };
+export type Widget = Record<string, any> & { id: string; type: "metric" | "bar" | "table"; title: string; width: 3 | 4 | 6 | 12 };
+export type Config = { schema_version: 1; title: string; description: string; source_id: "inventory"; filters: Filter[]; widgets: Widget[] };
+export type ResultWidget = Record<string, any> & { id: string; type: string; title: string };
+export type QueryMeta = { as_of_date: string; fetched_at: string; row_count: number; snapshot_row_count: number; source_updated_at: string | null; comparison_date: string | null; comparison_count: number | null; comparison_delta: number | null; manufacturer_count: number; model_count: number; top_manufacturer: { label: string; count: number; share: number } | null; top_model: { label: string; count: number; share: number } | null; unclassified_count: { manufacturer: number; model: number }; aging?: { source_field: string; count_0_to_29: number; count_30_to_59: number; count_60_to_89: number; count_30_to_89: number; count_90_plus: number; zero_count: number; unavailable_count: number }; pricing?: { total_amount: number | null; priced_count: number; unpriced_count: number }; holders?: Array<{ label: string; value: number; share: number }>; inventory_history?: Array<{ as_of_date: string; row_count: number }> };
+export type QueryResult = { meta: QueryMeta; widgets: ResultWidget[] };
+export type DashboardRow = { id: string; draft_config: Config; visibility: string; edit_version: number; published_revision: number; has_unpublished_changes: boolean; published_at: string | null; updated_at: string };
+export type DashboardViewState = { selected: Record<string, any>; applied: Record<string, any>; tables: Record<string, { page: number; page_size: number; sort: string }> };
+export type AppHistoryEntry = { __axDistribution: true; kind: "route" | "overlay"; entryKey: string; parentEntryKey?: string; path: string; overlay?: string; fallbackOnBack?: boolean; scrollY?: number; view?: DashboardViewState };
+export type AppLocation = { path: string; entryKey: string; overlay: string | null };

@@ -1,0 +1,1 @@
+"""KTIS OTT SSO integration."""

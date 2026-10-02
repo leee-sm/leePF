@@ -1,0 +1,39 @@
+services:
+  backend:
+    image: ax-distribution-backend:dev
+    environment:
+      APP_NAME: "AX Distribution Dashboard"
+      APP_ENVIRONMENT: "${APP_ENV:-production}"
+      ALLOWED_HOSTS: "${ALLOWED_HOSTS:-localhost,127.0.0.1}"
+      PUBLIC_BASE_URL: "${PUBLIC_BASE_URL:-}"
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-ax_distribution}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-ax_distribution}"
+      SSO_ENABLED: "${SSO_ENABLED:-true}"
+      SSO_URI: "${SSO_URI:-https://sso-hub.ktis.co.kr}"
+      SSO_EXCHANGE_BASE_URI: "${SSO_EXCHANGE_BASE_URI:-https://sso-hub.ktis.co.kr}"
+      SSO_LOGIN_URL: "${SSO_LOGIN_URL:-/slogin}"
+      SSO_EXCHANGE_URL: "${SSO_EXCHANGE_URL:-/api/ott/exchange}"
+      SSO_LOGOUT_URL: "${SSO_LOGOUT_URL:-/slogout}"
+      SSO_TOKEN_PARAM: "${SSO_TOKEN_PARAM:-ssoToken}"
+      SSO_RETURN_PARAM: "${SSO_RETURN_PARAM:-returnUrl}"
+      SSO_CALLBACK_PATH: "${SSO_CALLBACK_PATH:-/sso/callback}"
+      SESSION_COOKIE_SECURE: "${SESSION_COOKIE_SECURE:-false}"
+      SESSION_TTL_SECONDS: "${SESSION_TTL_SECONDS:-28800}"
+      DEV_AUTO_LOGIN: "${DEV_AUTO_LOGIN:-false}"
+      DEV_LOGIN_ALLOWED_HOSTS: "${DEV_LOGIN_ALLOWED_HOSTS:-localhost,127.0.0.1,::1,dstrb-dev.ktis.co.kr}"
+      DEV_AUTO_LOGIN_SABUN: "${DEV_AUTO_LOGIN_SABUN:-2210013}"
+      DEV_AUTO_LOGIN_USER_SABUN: "${DEV_AUTO_LOGIN_USER_SABUN:-2210014}"
+      SSO_BOOTSTRAP_ADMIN_SABUN: "${SSO_BOOTSTRAP_ADMIN_SABUN:-}"
+    ports:
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${HTTP_PORT:-8280}:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+networks:
+  default:
+    external: true
+    name: "${COMPOSE_PROJECT_NAME:-docker}_default"

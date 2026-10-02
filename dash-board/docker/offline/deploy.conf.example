@@ -1,0 +1,18 @@
+# Prefer SSH aliases in ~/.ssh/config for keys and unusual connection routes.
+BUILD_VERSION=202610
+OUTPUT_DIR=dist-offline
+PLATFORM=linux/amd64
+BUILD_CA_CERT_FILE=
+
+JUMP_HOST=chatbot@10.221.16.182:1022
+TARGET_HOST=tomcat@10.21.11.30
+TARGET_PORT=22
+DEPLOY_ROOT=/docker_tmp/ax-dstrb-dev
+# Existing docker-backend-1 / docker_postgres-data use project "docker".
+COMPOSE_PROJECT=docker
+
+# Optional SSH passwords. Leave empty to enter manually.
+# Quote values with single quotes to preserve $, !, spaces and backticks.
+JUMP_PASSWORD=''
+TARGET_PASSWORD=''
+# The target server sudo password is still entered interactively.

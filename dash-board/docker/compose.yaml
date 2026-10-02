@@ -1,0 +1,116 @@
+services:
+  backend:
+    image: ax-distribution-backend:dev
+      #build:
+      #context: ..
+      #dockerfile: Dockerfile
+    #secrets:
+    #- corporate-ca
+    environment:
+      APP_NAME: "AX Distribution Dashboard"
+      APP_ENV: "${APP_ENV:-production}"
+      ALLOWED_HOSTS: "${ALLOWED_HOSTS:-localhost,127.0.0.1}"
+      PUBLIC_BASE_URL: "${PUBLIC_BASE_URL:-}"
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-ax_distribution}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-ax_distribution}"
+      SSO_ENABLED: "${SSO_ENABLED:-true}"
+      SSO_URI: "${SSO_URI:-https://sso-hub.ktis.co.kr}"
+      SSO_EXCHANGE_BASE_URI: "${SSO_EXCHANGE_BASE_URI:-https://sso-hub.ktis.co.kr}"
+      SSO_LOGIN_URL: "${SSO_LOGIN_URL:-/slogin}"
+      SSO_EXCHANGE_URL: "${SSO_EXCHANGE_URL:-/api/ott/exchange}"
+      SSO_LOGOUT_URL: "${SSO_LOGOUT_URL:-/slogout}"
+      SSO_TOKEN_PARAM: "${SSO_TOKEN_PARAM:-ssoToken}"
+      SSO_RETURN_PARAM: "${SSO_RETURN_PARAM:-returnUrl}"
+      SSO_CALLBACK_PATH: "${SSO_CALLBACK_PATH:-/sso/callback}"
+      SESSION_COOKIE_SECURE: "${SESSION_COOKIE_SECURE:-false}"
+      SESSION_TTL_SECONDS: "${SESSION_TTL_SECONDS:-28800}"
+      DEV_AUTO_LOGIN: "${DEV_AUTO_LOGIN:-false}"
+      DEV_AUTO_LOGIN_SABUN: "${DEV_AUTO_LOGIN_SABUN:-2210013}"
+      DEV_AUTO_LOGIN_USER_SABUN: "${DEV_AUTO_LOGIN_USER_SABUN:-2210014}"
+      SSO_BOOTSTRAP_ADMIN_SABUN: "${SSO_BOOTSTRAP_ADMIN_SABUN:-}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  #proxy:
+    #image: "nginx:1.28-alpine"
+    ports:
+      - "127.0.0.1:8280:80"
+        #volumes:
+        #- "./nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+        #depends_on:
+        #backend:
+      #condition: service_healthy
+    #restart: unless-stopped
+
+  frontend-dev:
+    build:
+      context: ..
+      dockerfile: docker/frontend-dev.Dockerfile
+      secrets:
+        - corporate-ca
+    profiles: ["dev"]
+    environment:
+      VITE_BACKEND_URL: "http://backend:8080"
+    command: ["sh", "-c", "npm ci --offline && npm run dev"]
+    volumes:
+      - "../frontend:/workspace/frontend"
+      - "frontend-node-modules:/workspace/frontend/node_modules"
+    ports:
+      - "${FRONTEND_DEV_BIND_ADDRESS:-127.0.0.1}:${FRONTEND_DEV_PORT:-5173}:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: "postgres:18.6-alpine"
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-ax_distribution}"
+      POSTGRES_USER: "${POSTGRES_USER:-ax_distribution}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
+    volumes:
+      - "postgres-data:/var/lib/postgresql"
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ax_distribution} -d ${POSTGRES_DB:-ax_distribution}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  e2e:
+    build:
+      context: ..
+      dockerfile: docker/e2e.Dockerfile
+    image: "ax-distribution-dashboard-e2e:local"
+    profiles: ["test"]
+    network_mode: host
+    working_dir: /workspace
+    volumes:
+      - "../frontend/test-results:/workspace/test-results"
+    environment:
+      PLAYWRIGHT_BASE_URL: "http://127.0.0.1:${HTTP_PORT:-8080}"
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      CI: "true"
+    depends_on:
+      proxy:
+        condition: service_started
+    command: ["npm", "run", "test:e2e"]
+
+volumes:
+  postgres-data:
+  frontend-node-modules:
+
+secrets:
+  corporate-ca:
+    file: "${BUILD_CA_CERT_FILE:-/dev/null}"

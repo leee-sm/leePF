@@ -1,0 +1,1 @@
+"""AX Distribution FastAPI application."""
