@@ -11,9 +11,9 @@
     </div>
     <StateBlock v-if="message" class="mt-5" eyebrow="Status" title="병원 검색 안내" :text="message" />
     <div v-if="items.length" class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] lg:items-start">
-      <KakaoMap v-if="selected" :latitude="selected.latitude" :longitude="selected.longitude" :places="items" @select="selectPlace" />
+      <KakaoMap v-if="selected" :latitude="selected.latitude" :longitude="selected.longitude" :places="items" :selected-id="selectedPlace?.id" @select="selectPlace" />
       <div class="flex h-[42rem] min-w-0 flex-col gap-3 overflow-y-auto">
-        <article v-if="selectedPlace" class="rounded-2xl border border-baby/30 bg-white p-5">
+        <article v-if="selectedPlace" class="hidden rounded-2xl border border-baby/30 bg-white p-5">
           <p class="text-xs font-black uppercase tracking-wide text-baby">선택한 병원 상세</p>
           <h2 class="mt-2 text-xl font-black text-ink">{{ selectedPlace.name }}</h2>
           <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
@@ -75,6 +75,7 @@ async function load() {
   currentPage.value = 1
   if (!items.value.length) message.value = '검색 결과가 없습니다.'
 }
+watch(currentPage, () => { selectedPlace.value = null })
 const config = useRuntimeConfig()
 useSeoMeta({ title: '주변 병원 찾기', description: '주소 기준 주변 병원 목록과 위치 정보를 확인합니다.', ogUrl: `${config.public.appBaseUrl}/baby/hospitals` })
 useHead({ link: [{ rel: 'canonical', href: `${config.public.appBaseUrl}/baby/hospitals` }] })

@@ -4,11 +4,12 @@
 
 <script setup lang="ts">
 type Place = { name: string; latitude: number; longitude: number; [key: string]: any }
-const props = defineProps<{ latitude: number; longitude: number; places: Place[] }>()
+const props = defineProps<{ latitude: number; longitude: number; places: Place[]; selectedId?: string | null }>()
 const emit = defineEmits<{ select: [place: Place] }>()
 const mapElement = ref<HTMLElement | null>(null)
 let map: any
 let markers: any[] = []
+let selectedOverlay: any
 let sdkPromise: Promise<void> | null = null
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -55,11 +56,48 @@ async function draw() {
       kakao.maps.event.addListener(marker, 'click', () => emit('select', place))
       return marker
     })
+    focusSelected()
   } catch {
     if (mapElement.value) mapElement.value.textContent = '지도를 불러오지 못했습니다. Kakao JavaScript 키와 도메인 설정을 확인해 주세요.'
   }
 }
 
+function focusSelected() {
+  if (!map) return
+  const index = props.places.findIndex((place) => String(place.id) === String(props.selectedId))
+  if (selectedOverlay) selectedOverlay.setMap(null)
+  if (index < 0) return
+  const kakao = (window as any).kakao
+  const place = props.places[index]
+  markers[index]?.setZIndex(10)
+  map.setCenter(new kakao.maps.LatLng(place.latitude, place.longitude))
+  const content = document.createElement('div')
+  content.className = 'rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs shadow-lg'
+  content.style.maxWidth = '220px'
+  const title = document.createElement('strong')
+  title.className = 'block text-sm font-bold text-slate-900'
+  title.textContent = place.name
+  const address = document.createElement('span')
+  address.className = 'mt-1 block text-slate-600'
+  address.textContent = place.roadAddress || place.address || ''
+  content.append(title, address)
+  if (place.phone) {
+    const phone = document.createElement('span')
+    phone.className = 'mt-1 block text-slate-600'
+    phone.textContent = place.phone
+    content.append(phone)
+  }
+  if (place.openStatus || place.operatingStatus) {
+    const status = document.createElement('span')
+    status.className = 'mt-1 block font-bold text-slate-800'
+    status.textContent = place.openStatus || place.operatingStatus
+    content.append(status)
+  }
+  selectedOverlay = new kakao.maps.CustomOverlay({ position: new kakao.maps.LatLng(place.latitude, place.longitude), content, yAnchor: 1.25, zIndex: 20 })
+  selectedOverlay.setMap(map)
+}
+
 onMounted(draw)
 watch(() => [props.latitude, props.longitude, props.places], draw, { deep: true })
+watch(() => props.selectedId, focusSelected)
 </script>

@@ -29,7 +29,7 @@
       <p class="mt-5 text-xs leading-5 text-slate-500">정책은 변경될 수 있으므로 신청 전 반드시 공식기관의 최신 안내를 최종 확인하세요.</p>
     </section>
 
-    <section class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <section class="hidden">
       <NuxtLink v-for="item in links" :key="item.to" :to="item.to" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft hover:border-rose-300">
         <span class="text-sm font-black text-baby">{{ item.eyebrow }}</span>
         <h2 class="mt-2 text-xl font-black text-ink">{{ item.title }}</h2>

@@ -8,9 +8,9 @@
     <AddressSearch label="기준 주소" @select="selectAddress" />
     <StateBlock v-if="message" class="mt-5" eyebrow="Status" title="어린이집 검색 안내" :text="message" />
     <div v-if="items.length" class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] lg:items-start">
-      <KakaoMap v-if="selected" :latitude="selected.latitude" :longitude="selected.longitude" :places="items" @select="selectPlace" />
+      <KakaoMap v-if="selected" :latitude="selected.latitude" :longitude="selected.longitude" :places="items" :selected-id="selectedPlace?.id" @select="selectPlace" />
       <div class="flex h-[42rem] min-w-0 flex-col gap-3 overflow-y-auto">
-        <article v-if="selectedPlace" class="flex-none rounded-2xl border border-baby/30 bg-white p-5">
+        <article v-if="selectedPlace" class="hidden flex-none rounded-2xl border border-baby/30 bg-white p-5">
           <p class="text-xs font-black uppercase tracking-wide text-baby">선택한 어린이집 상세</p>
           <h2 class="mt-2 text-xl font-black text-ink">{{ selectedPlace.name }}</h2>
           <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
@@ -72,6 +72,7 @@ async function selectAddress(item: any) {
   currentPage.value = 1
   if (!items.value.length) message.value = '검색 결과가 없습니다.'
 }
+watch(currentPage, () => { selectedPlace.value = null })
 const config = useRuntimeConfig()
 useSeoMeta({ title: '주변 어린이집 정원·현원 정보', description: '주소 기준 주변 어린이집의 공개 정보를 확인합니다.', ogUrl: `${config.public.appBaseUrl}/baby/childcare` })
 useHead({ link: [{ rel: 'canonical', href: `${config.public.appBaseUrl}/baby/childcare` }] })
