@@ -484,6 +484,55 @@ input[type="checkbox"] {
   text-decoration: none;
 }
 
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.pricing-grid article {
+  min-height: 190px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.pricing-grid h3 {
+  margin-bottom: 10px;
+}
+
+.pricing-grid p {
+  color: var(--muted);
+}
+
+.lead-section {
+  width: min(1120px, calc(100% - 32px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 28px auto 64px;
+  padding: 32px;
+  border-radius: 8px;
+  background: #20302f;
+  color: #fff;
+}
+
+.lead-section p {
+  margin-bottom: 0;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.lead-section .eyebrow {
+  color: var(--gold);
+}
+
+.lead-section .primary-action {
+  background: #fff;
+  color: #20302f;
+}
+
 .footer {
   padding: 26px 0 42px;
   color: var(--muted);
@@ -502,7 +551,8 @@ input[type="checkbox"] {
 
   .benefit-grid,
   .timeline,
-  .checklist {
+  .checklist,
+  .pricing-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -541,8 +591,15 @@ input[type="checkbox"] {
 
   .benefit-grid,
   .timeline,
-  .checklist {
+  .checklist,
+  .pricing-grid {
     grid-template-columns: 1fr;
+  }
+
+  .lead-section {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 24px 18px;
   }
 
   .calculator-section {

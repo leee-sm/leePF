@@ -11,7 +11,7 @@ const values = {
   },
   parentBenefit24Months: 18_000_000,
   childAllowance24Months: 2_400_000,
-  regionalExample24Months: 120_000,
+  regionalExample24Months: 1_200_000,
 };
 
 const birthOrder = document.querySelector("#birthOrder");
@@ -27,7 +27,7 @@ function updateEstimate() {
     values.childAllowance24Months +
     (includeRegion.checked ? values.regionalExample24Months : 0);
 
-  result.value = `24개월 기준 약 ${formatter.format(total)}원`;
+  result.value = `24개월 예상 지원 합계 ${formatter.format(total)}원`;
   result.textContent = result.value;
 }
 

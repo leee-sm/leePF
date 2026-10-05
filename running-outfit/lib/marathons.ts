@@ -1,1 +1,0 @@
-export * from "./marathons-api";

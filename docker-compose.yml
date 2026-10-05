@@ -1,0 +1,105 @@
+services:
+  proxy:
+    image: nginx:1.27-alpine
+    ports:
+      - "${LOCAL_PROXY_PORT:-80}:80"
+    volumes:
+      - "./docker/proxy/nginx.conf:/etc/nginx/nginx.conf:ro"
+    depends_on:
+      - running
+      - baby
+      - dash-board
+    restart: unless-stopped
+
+  running:
+    build:
+      context: ./running
+    image: liferun-running-baby:latest
+    env_file:
+      - ./running/.env
+      - path: ./.env
+        required: false
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://${RUNNING_POSTGRES_USER:-liferun}:${RUNNING_POSTGRES_PASSWORD:-liferun_password}@running-postgres:5432/${RUNNING_POSTGRES_DB:-liferun}"
+      APP_BASE_URL: "${APP_BASE_URL:-http://localhost}"
+      PORT: 3000
+      HOST: 0.0.0.0
+    command: ["sh", "-c", "export NUXT_PUBLIC_DATA_SERVICE_KEY=\"$$PUBLIC_DATA_SERVICE_KEY\" NUXT_KOREA_AIR_DATA_KEY=\"$$PUBLIC_KOREA_AIR_DATA\" NUXT_PUBLIC_BABY_DATA_KEY=\"$$PUBLIC_BABY_DATA\" NUXT_HOSPITAL_DATA_KEY=\"$$PUBLIC_HSPT_DATA\" NUXT_KAKAO_REST_API_KEY=\"$$KAKAO_REST_API_KEY\" NUXT_PUBLIC_KAKAO_RUN_JAVASCRIPT_KEY=\"$$KAKAO_RUN_JAVASCRIPT_KEY\" NUXT_PUBLIC_KAKAO_BABY_JAVASCRIPT_KEY=\"$$KAKAO_BABY_JAVASCRIPT_KEY\" NUXT_PUBLIC_KAKAO_JAVASCRIPT_KEY=\"$$KAKAO_BABY_JAVASCRIPT_KEY\" NUXT_DATABASE_URL=\"$$DATABASE_URL\" NUXT_PUBLIC_APP_BASE_URL=\"$$APP_BASE_URL\"; exec node .output/server/index.mjs"]
+    ports:
+      - "${RUNNING_PORT:-3000}:3000"
+    depends_on:
+      running-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  running-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: "${RUNNING_POSTGRES_DB:-liferun}"
+      POSTGRES_USER: "${RUNNING_POSTGRES_USER:-liferun}"
+      POSTGRES_PASSWORD: "${RUNNING_POSTGRES_PASSWORD:-liferun_password}"
+    volumes:
+      - running-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${RUNNING_POSTGRES_USER:-liferun} -d ${RUNNING_POSTGRES_DB:-liferun}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  baby:
+    build:
+      context: ./baby
+    image: liferun-baby:latest
+    expose:
+      - "80"
+    restart: unless-stopped
+
+  dash-board:
+    build:
+      context: ./dash-board
+      dockerfile: Dockerfile
+    image: ax-distribution-dashboard-media:latest
+    environment:
+      APP_NAME: "AX Distribution Dashboard"
+      APP_ENV: "${APP_ENV:-production}"
+      ALLOWED_HOSTS: "${ALLOWED_HOSTS:-localhost,127.0.0.1,dash-board.localhost,dashboard.localhost}"
+      PUBLIC_BASE_URL: "${PUBLIC_BASE_URL:-http://dash-board.localhost}"
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-ax_distribution}:${POSTGRES_PASSWORD:-ax_distribution_password}@dash-board-postgres:5432/${POSTGRES_DB:-ax_distribution}"
+      SSO_ENABLED: "${SSO_ENABLED:-false}"
+      SESSION_COOKIE_SECURE: "${SESSION_COOKIE_SECURE:-false}"
+      DEV_AUTO_LOGIN: "${DEV_AUTO_LOGIN:-false}"
+    ports:
+      - "${DASHBOARD_PORT:-8080}:8080"
+    depends_on:
+      dash-board-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  dash-board-postgres:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-ax_distribution}"
+      POSTGRES_USER: "${POSTGRES_USER:-ax_distribution}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-ax_distribution_password}"
+    volumes:
+      - dash-board-postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ax_distribution} -d ${POSTGRES_DB:-ax_distribution}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  dash-board-postgres-data:
+  running-postgres-data:

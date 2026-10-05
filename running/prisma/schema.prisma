@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model RunPace {
+  id               BigInt   @id @default(autoincrement())
+  distanceType     String   @map("distance_type")
+  distanceKm       Decimal  @map("distance_km") @db.Decimal(8, 4)
+  targetSeconds    Int      @map("target_seconds")
+  paceSecondsPerKm Int      @map("pace_seconds_per_km")
+  targetTime       String   @map("target_time")
+  paceText         String   @map("pace_text")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@index([distanceType, createdAt])
+  @@map("run_pace")
+}
+
+model MarathonEvent {
+  id                    String    @id @default(cuid())
+  name                  String
+  region                String?
+  address               String?
+  latitude              Decimal?  @db.Decimal(10, 7)
+  longitude             Decimal?  @db.Decimal(10, 7)
+  raceDate              DateTime? @map("race_date") @db.Date
+  startTime             String?   @map("start_time")
+  registrationStartDate DateTime? @map("registration_start_date") @db.Date
+  registrationEndDate   DateTime? @map("registration_end_date") @db.Date
+  registrationStatus    String?   @map("registration_status")
+  distance10k           Boolean   @default(false) @map("distance_10k")
+  distanceHalf          Boolean   @default(false) @map("distance_half")
+  distanceFull          Boolean   @default(false) @map("distance_full")
+  entryFee              String?   @map("entry_fee")
+  organizer             String?
+  host                  String?
+  websiteUrl            String?   @map("website_url")
+  registrationUrl       String?   @map("registration_url")
+  description           String?
+  imageUrl              String?   @map("image_url")
+  sourceName            String?   @map("source_name")
+  sourceUrl             String?   @map("source_url")
+  sourceKey             String?   @unique @map("source_key")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  @@index([raceDate])
+  @@index([region])
+  @@index([registrationStatus])
+  @@map("marathon_event")
+}
+
+model BabyChecklist {
+  id           BigInt   @id @default(autoincrement())
+  type         String
+  periodType   String   @default("week") @map("period_type")
+  weekFrom     Int?     @map("week_from")
+  weekTo       Int?     @map("week_to")
+  monthFrom    Int?     @map("month_from")
+  monthTo      Int?     @map("month_to")
+  category     String
+  title        String
+  description  String?
+  sourceName   String?  @map("source_name")
+  sourceUrl    String?  @map("source_url")
+  displayOrder Int      @default(0) @map("display_order")
+  mandatory    Boolean  @default(false)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([type, weekFrom, weekTo, active])
+  @@map("baby_checklist")
+}
+
+model BabyBenefit {
+  id             BigInt   @id @default(autoincrement())
+  title          String
+  regionSido     String?  @map("region_sido")
+  regionSigungu  String?  @map("region_sigungu")
+    content        String?
+    amount         String?
+    target         String?
+  applyMethod    String?  @map("apply_method")
+  agency         String?
+  officialUrl    String?  @map("official_url")
+  sourceName     String?  @map("source_name")
+  effectiveDate  DateTime? @map("effective_date") @db.Date
+  updatedSourceAt DateTime? @map("updated_source_at") @db.Date
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([regionSido, regionSigungu])
+  @@map("baby_benefit")
+}
